@@ -1,0 +1,41 @@
+===== MODELO P3DX =====
+https://github.com/mario-serna/pioneer_p3dx_model
+
+===== SONAR =====
+1 - Baixar os códigos do Hector-Sensors no catkin space
+2 - Baixei os códigos do outro pioneer que só tem o sonar ativado
+3 - peguei os códigos que integram o sonar no xacro do pioneer
+4 - Portei esses códigos pra dentro do meu xacro
+5 - No xacro do pioneer tem que dar include nesses outros códigos do sonar anexados a alguma posição(no caso tem que linkar com o front_sonar)
+6 - Modifiquei o código do .gazebo pra que o sonar ficasse visível
+
+https://github.com/tu-darmstadt-ros-pkg/hector_models
+
+sudo apt-get install ros-melodic-hector-sensors se não me engano
+
+https://answers.ros.org/question/262973/hector-sonar-implementation-on-a-pioneer-3dx/
+
+https://github.com/jimfinnis/gazebo_ros_3dx
+
+....
+
+https://answers.ros.org/question/362576/adding-sonar-in-gazebo-and-ros/
+https://osrf-distributions.s3.amazonaws.com/gazebo/api/dev/classgazebo_1_1sensors_1_1SonarSensor.html
+http://gazebosim.org/tutorials?tut=ros_gzplugins
+https://medium.com/teamarimac/integrating-sonar-and-ir-sensor-plugin-to-robot-model-in-gazebo-with-ros-656fd9452607
+
+
+[carol]
+caroline@dell:~/robotics/src$ sudo apt-get install ros-noetic-hector-gazebo-plugins
+
+.........................
+
+$ source devel/setup.bash
+$ roscore
+$ roslaunch deep_wall_follow robo.launch
+$ python scripts/blabla.py
+
+........................
+baixado na raiz: https://github.com/carolreis/hector_models
+
+aqui tem o devel/, build/ e o .catkin_workspace

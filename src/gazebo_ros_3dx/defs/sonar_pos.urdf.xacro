@@ -1,0 +1,27 @@
+<robot xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" xmlns:xacro="http://ros.org/wiki/xacro" xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor">
+<xacro:sonar_sensor update_rate="10" name="sonar0" ros_topic="sonar0" min_range="0.100000" ray_count="2" field_of_view="0.267000" parent="base_link" max_range="3">
+<origin xyz="0.067700 0.140400 0.208400" rpy="0 0 1.570796"/>
+ </xacro:sonar_sensor>
+ <xacro:sonar_sensor update_rate="10" name="sonar1" ros_topic="sonar1" min_range="0.100000" ray_count="2" field_of_view="0.267000" parent="base_link" max_range="3">
+<origin xyz="0.117200 0.122900 0.208400" rpy="0 0 0.872665"/>
+ </xacro:sonar_sensor>
+ <xacro:sonar_sensor update_rate="10" name="sonar2" ros_topic="sonar2" min_range="0.100000" ray_count="2" field_of_view="0.267000" parent="base_link" max_range="3">
+<origin xyz="0.151700 0.079900 0.208400" rpy="0 0 0.523599"/>
+ </xacro:sonar_sensor>
+ <xacro:sonar_sensor update_rate="10" name="sonar3" ros_topic="sonar3" min_range="0.100000" ray_count="2" field_of_view="0.267000" parent="base_link" max_range="3">
+<origin xyz="0.169900 0.029700 0.208400" rpy="0 0 0.174533"/>
+ </xacro:sonar_sensor>
+ <xacro:sonar_sensor update_rate="10" name="sonar4" ros_topic="sonar4" min_range="0.100000" ray_count="2" field_of_view="0.267000" parent="base_link" max_range="3">
+<origin xyz="0.169900 -0.029700 0.208400" rpy="0 0 -0.174533"/>
+ </xacro:sonar_sensor>
+ <xacro:sonar_sensor update_rate="10" name="sonar5" ros_topic="sonar5" min_range="0.100000" ray_count="2" field_of_view="0.267000" parent="base_link" max_range="3">
+<origin xyz="0.151700 -0.079900 0.208400" rpy="0 0 -0.523599"/>
+ </xacro:sonar_sensor>
+ <xacro:sonar_sensor update_rate="10" name="sonar6" ros_topic="sonar6" min_range="0.100000" ray_count="2" field_of_view="0.267000" parent="base_link" max_range="3">
+<origin xyz="0.117200 -0.122900 0.208400" rpy="0 0 -0.872665"/>
+ </xacro:sonar_sensor>
+ <xacro:sonar_sensor update_rate="10" name="sonar7" ros_topic="sonar7" min_range="0.100000" ray_count="2" field_of_view="0.267000" parent="base_link" max_range="3">
+<origin xyz="0.067700 -0.140400 0.208400" rpy="0 0 -1.570796"/>
+ </xacro:sonar_sensor>
+ </robot>
+
