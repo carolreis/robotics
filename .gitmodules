@@ -1,3 +1,6 @@
 [submodule "src/darknet_ros"]
 	path = src/darknet_ros
 	url = git@github.com:carolreis/darknet_ros.git
+[submodule "src/aws-robomaker-small-house-world"]
+	path = src/aws-robomaker-small-house-world
+	url = git@github.com:carolreis/aws-robomaker-small-house-world.git
