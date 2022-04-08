@@ -11,7 +11,7 @@ https://github.com/mario-serna/pioneer_p3dx_model
 
 https://github.com/tu-darmstadt-ros-pkg/hector_models
 
-sudo apt-get install ros-melodic-hector-sensors se não me engano
+sudo apt-get install ros-melodic-hector-sensors se não me engano (noetic, nesse caso)
 
 https://answers.ros.org/question/262973/hector-sonar-implementation-on-a-pioneer-3dx/
 
@@ -39,3 +39,16 @@ $ python scripts/blabla.py
 baixado na raiz: https://github.com/carolreis/hector_models
 
 aqui tem o devel/, build/ e o .catkin_workspace
+
+...
+
+tem um pioneer_bringup e pioneer_teleop aqui: https://github.com/amineHorseman
+
+
+.........................
+
+[UPDATE 08/04/22]
+Fiz o fork desses repositórios como o pioneer_*, o hector_models, p3dx*... 
+E coloquei no repositório como um submódulo
+
+
