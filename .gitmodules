@@ -10,3 +10,6 @@
 [submodule "src/pioneer_teleop"]
 	path = src/pioneer_teleop
 	url = git@github.com:carolreis/pioneer_teleop.git
+[submodule "hector_models_carol"]
+	path = hector_models_carol
+	url = git@github.com:carolreis/hector_models.git
