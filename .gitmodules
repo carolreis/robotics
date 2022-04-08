@@ -4,3 +4,6 @@
 [submodule "src/aws-robomaker-small-house-world"]
 	path = src/aws-robomaker-small-house-world
 	url = git@github.com:carolreis/aws-robomaker-small-house-world.git
+[submodule "src/pioneer_bringup"]
+	path = src/pioneer_bringup
+	url = git@github.com:carolreis/pioneer_bringup.git

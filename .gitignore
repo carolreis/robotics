@@ -3,5 +3,4 @@ build/
 deep_wall_follow/
 devel/
 hector_models_carol
-src/pioneer_bringup
 src/pioneer_teleop
