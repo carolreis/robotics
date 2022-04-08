@@ -7,3 +7,6 @@
 [submodule "src/pioneer_bringup"]
 	path = src/pioneer_bringup
 	url = git@github.com:carolreis/pioneer_bringup.git
+[submodule "src/pioneer_teleop"]
+	path = src/pioneer_teleop
+	url = git@github.com:carolreis/pioneer_teleop.git
