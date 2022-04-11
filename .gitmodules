@@ -1,15 +1,15 @@
 [submodule "src/darknet_ros"]
 	path = src/darknet_ros
-	url = git@github.com:carolreis/darknet_ros.git
+	url = https://github.com/carolreis/darknet_ros.git
 [submodule "src/aws-robomaker-small-house-world"]
 	path = src/aws-robomaker-small-house-world
-	url = git@github.com:carolreis/aws-robomaker-small-house-world.git
+	url = https://github.com/carolreis/aws-robomaker-small-house-world.git
 [submodule "src/pioneer_bringup"]
 	path = src/pioneer_bringup
-	url = git@github.com:carolreis/pioneer_bringup.git
+	url = https://github.com/carolreis/pioneer_bringup.git
 [submodule "src/pioneer_teleop"]
 	path = src/pioneer_teleop
-	url = git@github.com:carolreis/pioneer_teleop.git
+	url = https://github.com/carolreis/pioneer_teleop.git
 [submodule "hector_models_carol"]
 	path = hector_models_carol
-	url = git@github.com:carolreis/hector_models.git
+	url = https://github.com/carolreis/hector_models.git
