@@ -1,0 +1,4 @@
+<launch>
+    <include file="/home/phi/robotics/worlds/pal_gazebo_worlds/launch/pal_gazebo.launch" />
+</launch>
+

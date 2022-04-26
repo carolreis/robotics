@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 MAX_SPEED = 0.5
 MAX_ROTATIONAL_SPEED = 0.5
