@@ -5,7 +5,7 @@
     <arg name="z" default="0.0"/>
 
     <!-- Para que serve esses parâmetros? -->
-    <arg name="name" default="p3dx3_SEMANTIC"/>
+    <arg name="name" default="p3dx3_TESTE"/>
     <arg name="namespace_arg" default="p3dx3_TESTE"/>
 
     <arg name="robot_model" default="$(find p3dx_description)/urdf/pioneer3dx_camera.xacro"/>
