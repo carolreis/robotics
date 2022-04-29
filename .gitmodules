@@ -13,3 +13,6 @@
 [submodule "hector_models_carol"]
 	path = hector_models_carol
 	url = https://github.com/carolreis/hector_models.git
+[submodule "src/realsense-ros"]
+	path = src/realsense-ros
+	url = https://github.com/carolreis/realsense-ros.git
