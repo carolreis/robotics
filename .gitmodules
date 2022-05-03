@@ -15,7 +15,10 @@
 	url = https://github.com/carolreis/hector_models.git
 [submodule "src/realsense-ros"]
 	path = src/realsense-ros
-	url = https://github.com/carolreis/realsense-ros.git
+	url = https://github.com/rickstaa/realsense-ros-gazebo.git
 [submodule "src/gazebo-realsense"]
 	path = src/gazebo-realsense
 	url = https://github.com/intel/gazebo-realsense.git
+[submodule "src/realsense-ros-gazebo"]
+	path = src/realsense-ros-gazebo
+	url = https://github.com/rickstaa/realsense-ros-gazebo.git
