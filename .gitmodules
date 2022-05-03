@@ -16,3 +16,6 @@
 [submodule "src/realsense-ros"]
 	path = src/realsense-ros
 	url = https://github.com/carolreis/realsense-ros.git
+[submodule "src/gazebo-realsense"]
+	path = src/gazebo-realsense
+	url = https://github.com/intel/gazebo-realsense.git
