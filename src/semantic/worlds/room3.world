@@ -483,15 +483,15 @@
       <pose>0.948175 -0.5138 0 0 -0 0</pose>
     </model>
     <state world_name='default'>
-      <sim_time>3675 274000000</sim_time>
-      <real_time>333 336491785</real_time>
-      <wall_time>1651244298 181472019</wall_time>
-      <iterations>325811</iterations>
+      <sim_time>3899 690000000</sim_time>
+      <real_time>226 80426468</real_time>
+      <wall_time>1651764303 779602119</wall_time>
+      <iterations>224416</iterations>
       <model name='Floor'>
-        <pose>1.39186 2.60807 0 0 -0 0</pose>
+        <pose>-1.12412 2.82828 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='main'>
-          <pose>1.39186 2.60807 0.01 0 -0 0</pose>
+          <pose>-1.12412 2.82828 0.01 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -579,8 +579,18 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
+      <model name='room_carol'>
+        <pose>0.322541 3.04742 0 0 -0 1.57601</pose>
+        <scale>1 1 1</scale>
+        <link name='Wall_3'>
+          <pose>-0.164167 2.72467 0 0 -0 -3.13638</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
       <model name='sofa_set_2'>
-        <pose>-0.782305 -1.62266 0.030874 0 -0 -3.14159</pose>
+        <pose>-0.782304 -1.62266 0.030874 0 0 -3.14159</pose>
         <scale>1 1 1</scale>
         <link name='link_8'>
           <pose>-0.715413 -1.08807 0.030874 0 -0 -3.14159</pose>
@@ -657,7 +667,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>4.96665 2.682 20.5365 0 1.3778 -2.82447</pose>
+        <pose>1.10478 -6.158 33.2954 0 1.2178 1.7099</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -1281,6 +1291,55 @@
       <static>1</static>
       <allow_auto_disable>1</allow_auto_disable>
       <pose>-0.462615 1.80365 0 0 -0 0</pose>
+    </model>
+    <model name='room_carol'>
+      <pose>0.326753 2.23908 0 0 -0 0</pose>
+      <link name='Wall_3'>
+        <collision name='Wall_3_Collision'>
+          <geometry>
+            <box>
+              <size>3 0.15 2.5</size>
+            </box>
+          </geometry>
+          <pose>0 0 1.25 0 -0 0</pose>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='Wall_3_Visual'>
+          <pose>0 0 1.25 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>3 0.15 2.5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Wood</name>
+            </script>
+            <ambient>1 1 1 1</ambient>
+          </material>
+          <meta>
+            <layer>0</layer>
+          </meta>
+        </visual>
+        <pose>-0.320208 0.488383 0 0 -0 1.5708</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <static>1</static>
     </model>
   </world>
 </sdf>

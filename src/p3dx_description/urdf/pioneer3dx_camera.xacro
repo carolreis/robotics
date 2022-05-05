@@ -185,7 +185,7 @@
 	<!-- <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/> -->
 	<xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
   	<xacro:sensor_d435i parent="lms100">
-		<origin xyz="0 0 0.05" rpy="0 0.2 0"/>
+		<origin xyz="0 0 0.8" rpy="0 0.1 0"/>
 	</xacro:sensor_d435i>
 
 </robot>
