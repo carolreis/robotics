@@ -1,0 +1,58 @@
+#! /usr/bin/env python3
+
+'''# esquerda do robô
+DARKNET:  {'xmin': 9, 'xmax': 413, 'ymin': 193, 'ymax': 463, 'id': 59, 'class': 'bed'}
+BOUNDING_BOX_CENTROID:  (211.0, 328.0)
+ROBOT:  (0.9016062564142248, 3.983891984294499, 1.5916)
+DEPTH:  1.797
+ANGLE:  1.7978924634318174
+OBJECT XY:  (-0.4045930623280026, 1.7508607751377747)
+
+
+
+# direita do robô
+DARKNET:  {'xmin': 287, 'xmax': 640, 'ymin': 193, 'ymax': 478, 'id': 59, 'class': 'bed'}
+BOUNDING_BOX_CENTROID:  (463.5, 335.5)
+ROBOT:  (-0.5331869725690697, 4.034668485608404, 1.5916)
+DEPTH:  1.697
+ANGLE:  1.3200131330049012
+OBJECT XY:  (0.42113215194591047, 1.6439150557730793)
+'''
+
+from math import sin, cos, pi, sqrt
+
+# a = 1.7978924634318174
+# d = 1.797
+
+a = 1.3200131330049012
+d = 1.797
+
+x = cos(a) * d
+y = sin(a) * d
+
+print('a: ', a)
+print('d: ', d)
+print('x: ', x)
+print('y: ', y)
+
+
+
+'''
+DARKNET:  {'xmin': 13, 'xmax': 422, 'ymin': 188, 'ymax': 470, 'id': 59, 'class': 'bed'}
+BOUNDING_BOX_CENTROID:  (217.5, 329.0)
+ROBOT:  (0.8571089759469082, 4.03022374072838, 1.5915)
+DEPTH:  1.762
+ANGLE:  1.7854906192822133
+OBJECT XY:  (-0.37539189628879593, 1.7215472471589914)
+OBJECT XY + ROBOT:  t
+
+
+DARKNET:  {'xmin': 295, 'xmax': 638, 'ymin': 191, 'ymax': 472, 'id': 59, 'class': 'bed'}
+BOUNDING_BOX_CENTROID:  (466.5, 331.5)
+ROBOT:  (-0.5823903685085572, 4.078217079020451, 1.5915)
+DEPTH:  1.736
+ANGLE:  1.3142353587820068
+OBJECT XY:  (0.4405197079890566, 1.6791778901811554)
+OBJECT XY + ROBOT:  (-0.1418706605195006, 5.757394969201607)
+
+'''

@@ -13,10 +13,10 @@ from sensor_msgs.msg import Image
 from sensor_msgs.msg import PointCloud2
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from cv_bridge import CvBridge, CvBridgeError
+from nav_msgs.msg import OccupancyGrid
 
 
 ## CONSTANTS
-
 D = None
 
 # Robot
@@ -41,7 +41,7 @@ CAMERA_DEG_ANGLE = 69.4
 CAMERA_RAD_ANGLE = CAMERA_DEG_ANGLE * PI_180
 CAMERA_COLOR_WIDTH = 640
 CAMERA_COLOR_HEIGHT = 480
-CAMERA_RAD_ANGLE_PER_PIXEL = CAMERA_RAD_ANGLE / CAMERA_COLOR_WIDTH
+CAMERA_RAD_ANGLE_PER_PIXEL = CAMERA_COLOR_WIDTH / CAMERA_RAD_ANGLE
 CAMERA_DEPTH_WIDTH = 1280
 CAMERA_DEPTH_HEIGHT = 720
 DEPTH_VALUE = None
@@ -51,7 +51,6 @@ PIXEL_COLOR_X = None
 PIXEL_COLOR_Y = None
 
 # Objects
-
 CLASSES = [
     'person',
     'bicycle',
@@ -155,6 +154,78 @@ OBJECT_STRUCTURE = {
     'y': 0,
     'Class': ''
 }
+
+# >>>>> Map
+MAP_WIDTH = None
+MAP_HEIGHT = None
+MAP_ORIGIN = None
+MAP_DATA = None
+MAP_RESOLUTION = None
+MAP_HEADER = None
+MAP_INFO = None
+
+'''
+  // It transforms the coordinate system from the Odom to the Map
+  std::tuple<int, int> transformCoordinateOdomToMap(float x, float y) {
+    int j = y / map_resolution_ - map_origin_y_ / map_resolution_;
+    int i = x / map_resolution_ - map_origin_x_ / map_resolution_;
+    return std::make_tuple(i, j);
+  }
+
+  // It transforms the coordinate system from the Map to the Odom
+  std::tuple<float, float> transformCoordinateMapToOdom(int x, int y) {
+    float i = (x + map_origin_x_ / map_resolution_) * map_resolution_;
+    float j = (y + map_origin_y_ / map_resolution_) * map_resolution_;
+    return std::make_tuple(i, j);
+  }
+'''
+
+# It transforms the coordinate system from the Odom to the Map
+def transform_coord_odom_top_map(x, y):
+    j = y / MAP_RESOLUTION - MAP_ORIGIN.y / MAP_RESOLUTION
+    i = x / MAP_RESOLUTION - MAP_ORIGIN.x / MAP_RESOLUTION
+    return (int(i), int(j))
+
+# It transforms the coordinate system from the Map to the Odom
+def transform_coord_map_to_odom(x, y):
+    i = (x + MAP_ORIGIN.x / MAP_RESOLUTION) * MAP_RESOLUTION
+    j = (y + MAP_ORIGIN.y / MAP_RESOLUTION) * MAP_RESOLUTION
+    return (i,j)
+
+def matrix_indices_to_vector_index(i, j):
+    return i + j * MAP_WIDTH
+
+def create_global_map_message(a):
+    x = a[0]
+    y = a[1]
+    radius = 5
+
+    grid = OccupancyGrid()
+    grid.header = MAP_HEADER
+    grid.info = MAP_INFO
+    grid.data = [None] * (MAP_HEIGHT * MAP_WIDTH)
+
+    #  Copy map
+    for h in range(0, MAP_HEIGHT):
+        m = h * MAP_WIDTH
+        for w in range(0, MAP_WIDTH):
+            i = w + m
+
+            if h == y and w == x:
+                print("H: %s | W: %s" % (h, w))
+                grid.data[i] = 100
+            else:
+                grid.data[i] = MAP_DATA[i]
+
+    # Radius
+    for i in range(y - radius, y + radius):
+        for j in range(x - radius, x + radius):
+            if x >= 0 and x < MAP_WIDTH and y >= 0 and y < MAP_HEIGHT:
+                idx = matrix_indices_to_vector_index(j, i)
+                print("... PINTANDO: ", idx)
+                grid.data[idx] = 100
+
+    PUBLISHER.publish(grid)
 
 def mock_found_objects():
     x = [10, 12, 30, 40]
@@ -287,9 +358,20 @@ def get_object_angle(robo_angle, pixel_x):
         based on the opening angle from camera,
         and based on the angle from the robot - which is the center of the image
     """
-    half_camera_angle = CAMERA_RAD_ANGLE / 2
-    angle = robo_angle - half_camera_angle + (CAMERA_RAD_ANGLE_PER_PIXEL * pixel_x)
-    return angle
+    # half_camera_angle = CAMERA_RAD_ANGLE / 2
+    # angle = robo_angle + half_camera_angle - (CAMERA_RAD_ANGLE_PER_PIXEL * pixel_x)
+
+    metade = CAMERA_COLOR_WIDTH / 2
+    p = pixel_x - metade
+    angle = p * CAMERA_RAD_ANGLE_PER_PIXEL * (-1)
+    b = robo_angle + angle
+
+    if b > pi:
+        b = b - (2*pi)
+    elif b < -pi:
+        b = b + (2*pi)
+
+    return b
 
 def get_world_xy_from_angle(object_angle, d, x_robot, y_robot):
     """ It gets the (x,y) based on angle
@@ -300,6 +382,8 @@ def get_world_xy_from_angle(object_angle, d, x_robot, y_robot):
         object_x = cos(object_angle) * d
         object_y = sin(object_angle) * d
         object_centroid = (object_x + x_robot, object_y + y_robot)
+
+        # object_centroid = (object_x, object_y)
         return object_centroid
     except BaseException as e:
         print("Exception: %s " % e)
@@ -308,6 +392,29 @@ def get_bounding_box_centroid(xmax, xmin, ymax, ymin):
     x_centroid = ((xmax - xmin) / 2) + xmin
     y_centroid = ((ymax - ymin) / 2) + ymin
     return x_centroid, y_centroid
+
+def map_callback(msg):
+    global MAP_WIDTH
+    global MAP_HEIGHT
+    global MAP_ORIGIN
+    global MAP_DATA
+    global MAP_RESOLUTION
+    global MAP_INFO
+    global MAP_HEADER
+
+    MAP_INFO = msg.info
+    MAP_RESOLUTION = MAP_INFO.resolution
+    MAP_WIDTH = MAP_INFO.width
+    MAP_HEIGHT = MAP_INFO.height
+    MAP_ORIGIN = MAP_INFO.origin.position
+    MAP_DATA = msg.data
+    MAP_HEADER = msg.header
+
+    print('...................................')
+    print("MAP WIDTH: ", MAP_WIDTH)
+    print("MAP HEIGHT: ", MAP_HEIGHT)
+    print("ORIGIN:\n", MAP_ORIGIN)
+    print('...................................')
 
 def darknet_callback(msg):
     global DARKNET
@@ -328,8 +435,6 @@ def darknet_callback(msg):
                                             DARKNET['ymax'],
                                             DARKNET['ymin']
                                         )
-    pass
-
 bridge = CvBridge()
 
 def depth_callback(msg):
@@ -382,6 +487,7 @@ def odom_callback(msg):
     CURRENT_POSE = (X, Y, THETA)
 
 def main():
+    global PUBLISHER
 
     rospy.init_node('detection')
 
@@ -397,31 +503,58 @@ def main():
     pointclould_topic = '/camera/depth/color/points'
     rospy.Subscriber(pointclould_topic, PointCloud2, pointcloud_callback)
 
+    map_topic = '/map'
+    rospy.Subscriber(map_topic, OccupancyGrid, map_callback)
+
+    map_publish_topic = '/map_carol'
+    PUBLISHER = rospy.Publisher(map_publish_topic, OccupancyGrid)
+
     rate = rospy.Rate(1)
     while not rospy.is_shutdown():
-
 
         if BOUNDING_BOX_CENTROID and DEPTH_VALUE:
 
             # Object bounding box centroid
             x_bounding_box, y_bounding_box = BOUNDING_BOX_CENTROID
+            print("\n\nDARKNET: ", DARKNET)
+            print("BOUNDING_BOX_CENTROID: ", BOUNDING_BOX_CENTROID)
+            print("ROBOT: ", CURRENT_POSE)
+            print("DEPTH: ", DEPTH_VALUE)
 
-            # Object angle in world, using robot angle  
+            # # Object angle in world, using robot angle  
             x_angle = get_object_angle(CURRENT_POSE[2], x_bounding_box)
+            print("ANGLE: ", x_angle)
 
-            # Object angle based on robot point of view, tere the center is 0º
-            angle_from_robot_vision = get_object_angle_pov_robot(x_angle, CURRENT_POSE[2])
+            # # Object angle based on robot point of view, tere the center is 0º
+            # angle_from_robot_vision = get_object_angle_pov_robot(x_angle, CURRENT_POSE[2])
 
-            # Getting x-axis and y-axis coordinate on map, based on angle and distance (radius)
+            # # Getting x-axis and y-axis coordinate on map, based on angle and distance (radius)
             object_map_xy = get_world_xy_from_angle(x_angle, DEPTH_VALUE, CURRENT_POSE[0], CURRENT_POSE[1])
 
-            #  TODO: Sincronizar as leituras e.e
-            check_robot_state()
-            object_match(object_map_xy, DARKNET['class'])
+            object_xy = (
+                    object_map_xy[0] + CURRENT_POSE[0],
+                    object_map_xy[1] + CURRENT_POSE[1]
+            )
 
-            # print("angle_from_robot_vision: ", angle_from_robot_vision)
-            # print("OBJECT MAP XY: ", object_map_xy)
-            # print("ROBOT: ", CURRENT_POSE)
+            print("OBJECT XY: ", object_map_xy)
+            print("OBJECT XY + ROBOT: ", object_xy)
+
+            if MAP_DATA:
+                a = transform_coord_odom_top_map(object_xy[0], object_xy[1])
+                create_global_map_message(a)
+
+                # for i in range(y - radius, y + radius):
+                #     for j in range(x - radius, x + radius):
+                #         if x >= 0 and x < MAP_WIDTH and y >= 0 and y < MAP_HEIGHT:
+                #             print
+                #             create_global_map_message((j,i))
+
+                # #  TODO: Sincronizar as leituras e.e
+            # check_robot_state()
+            # object_match(object_map_xy, DARKNET['class'])
+
+            # # print("angle_from_robot_vision: ", angle_from_robot_vision)
+            # # print("OBJECT MAP XY: ", object_map_xy)
 
         rate.sleep()
 
