@@ -15,6 +15,8 @@ from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from cv_bridge import CvBridge, CvBridgeError
 from nav_msgs.msg import OccupancyGrid
 
+import numpy as np
+from scipy import stats
 
 ## CONSTANTS
 D = None
@@ -213,7 +215,7 @@ def create_global_map_message(a):
 
             if h == y and w == x:
                 print("H: %s | W: %s" % (h, w))
-                grid.data[i] = 100
+                grid.data[i] = 80
             else:
                 grid.data[i] = MAP_DATA[i]
 
@@ -222,8 +224,7 @@ def create_global_map_message(a):
         for j in range(x - radius, x + radius):
             if x >= 0 and x < MAP_WIDTH and y >= 0 and y < MAP_HEIGHT:
                 idx = matrix_indices_to_vector_index(j, i)
-                print("... PINTANDO: ", idx)
-                grid.data[idx] = 100
+                grid.data[idx] = 80
 
     PUBLISHER.publish(grid)
 
@@ -362,8 +363,11 @@ def get_object_angle(robo_angle, pixel_x):
     # angle = robo_angle + half_camera_angle - (CAMERA_RAD_ANGLE_PER_PIXEL * pixel_x)
 
     metade = CAMERA_COLOR_WIDTH / 2
+
     p = pixel_x - metade
-    angle = p * CAMERA_RAD_ANGLE_PER_PIXEL * (-1)
+
+    angle = (p / CAMERA_RAD_ANGLE_PER_PIXEL) * (-1)
+
     b = robo_angle + angle
 
     if b > pi:
@@ -381,9 +385,7 @@ def get_world_xy_from_angle(object_angle, d, x_robot, y_robot):
     try:
         object_x = cos(object_angle) * d
         object_y = sin(object_angle) * d
-        object_centroid = (object_x + x_robot, object_y + y_robot)
-
-        # object_centroid = (object_x, object_y)
+        object_centroid = (object_x, object_y)
         return object_centroid
     except BaseException as e:
         print("Exception: %s " % e)
@@ -413,6 +415,7 @@ def map_callback(msg):
     print('...................................')
     print("MAP WIDTH: ", MAP_WIDTH)
     print("MAP HEIGHT: ", MAP_HEIGHT)
+    print("MAP RESOLUTION: ", MAP_RESOLUTION)
     print("ORIGIN:\n", MAP_ORIGIN)
     print('...................................')
 
@@ -452,12 +455,20 @@ def depth_callback(msg):
 
         cv_image = bridge.imgmsg_to_cv2(msg, msg.encoding)  # It gets depth information in a 'readable way'
 
-        if DEPTH_X and DEPTH_Y:
-            ''' Depth is in meters
-                Opencv returns image as: (y,x) and not (x,y)
-            '''
-            depth = cv_image[DEPTH_Y][DEPTH_X] / 1000
-            DEPTH_VALUE = depth
+        # # TEST MODE
+        # np_img = np.array(cv_image)
+        # DEPTH_VALUE = stats.mode(np_img)
+
+        # TEST MEDIAN
+        DEPTH_VALUE = np.mean(cv_image) / 1000
+
+        # # Pega o DEPTH do pixel específico
+        # if DEPTH_X and DEPTH_Y:
+        #     ''' Depth is in meters
+        #         Opencv returns image as: (y,x) and not (x,y)
+        #     '''
+        #     depth = cv_image[DEPTH_Y][DEPTH_X] / 1000
+        #     DEPTH_VALUE = depth
 
 def pointcloud_callback(msg):
     # print("msg: ", msg.point_step)
@@ -512,21 +523,16 @@ def main():
     rate = rospy.Rate(1)
     while not rospy.is_shutdown():
 
-        if BOUNDING_BOX_CENTROID and DEPTH_VALUE:
+        if BOUNDING_BOX_CENTROID and DEPTH_VALUE and CURRENT_POSE and DARKNET:
 
             # Object bounding box centroid
             x_bounding_box, y_bounding_box = BOUNDING_BOX_CENTROID
-            print("\n\nDARKNET: ", DARKNET)
-            print("BOUNDING_BOX_CENTROID: ", BOUNDING_BOX_CENTROID)
-            print("ROBOT: ", CURRENT_POSE)
-            print("DEPTH: ", DEPTH_VALUE)
 
             # # Object angle in world, using robot angle  
             x_angle = get_object_angle(CURRENT_POSE[2], x_bounding_box)
-            print("ANGLE: ", x_angle)
 
             # # Object angle based on robot point of view, tere the center is 0º
-            # angle_from_robot_vision = get_object_angle_pov_robot(x_angle, CURRENT_POSE[2])
+            angle_from_robot_vision = get_object_angle_pov_robot(x_angle, CURRENT_POSE[2])
 
             # # Getting x-axis and y-axis coordinate on map, based on angle and distance (radius)
             object_map_xy = get_world_xy_from_angle(x_angle, DEPTH_VALUE, CURRENT_POSE[0], CURRENT_POSE[1])
@@ -536,20 +542,19 @@ def main():
                     object_map_xy[1] + CURRENT_POSE[1]
             )
 
-            print("OBJECT XY: ", object_map_xy)
-            print("OBJECT XY + ROBOT: ", object_xy)
-
             if MAP_DATA:
                 a = transform_coord_odom_top_map(object_xy[0], object_xy[1])
                 create_global_map_message(a)
 
-                # for i in range(y - radius, y + radius):
-                #     for j in range(x - radius, x + radius):
-                #         if x >= 0 and x < MAP_WIDTH and y >= 0 and y < MAP_HEIGHT:
-                #             print
-                #             create_global_map_message((j,i))
+            print("\n\nDARKNET: ", DARKNET)
+            print("BOUNDING_BOX_CENTROID: ", BOUNDING_BOX_CENTROID)
+            print("ROBOT: ", CURRENT_POSE)
+            print("DEPTH: ", DEPTH_VALUE)
+            print("ANGLE: ", x_angle)
+            print("OBJECT XY: ", object_map_xy)
+            print("OBJECT XY + ROBOT: ", object_xy)
 
-                # #  TODO: Sincronizar as leituras e.e
+            # #  TODO: Sincronizar as leituras e.e
             # check_robot_state()
             # object_match(object_map_xy, DARKNET['class'])
 
