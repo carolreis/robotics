@@ -53,102 +53,16 @@ PIXEL_COLOR_X = None
 PIXEL_COLOR_Y = None
 
 # Objects
-CLASSES = [
-    'person',
-    'bicycle',
-    'car',
-    'motorbike',
-    'aeroplane',
-    'bus',
-    'train',
-    'truck',
-    'boat',
-    'traffic light',
-    'fire hydrant',
-    'stop sign',
-    'parking meter',
-    'bench',
-    'bird',
-    'cat',
-    'dog',
-    'horse',
-    'sheep',
-    'cow',
-    'elephant',
-    'bear',
-    'zebra',
-    'giraffe',
-    'backpack',
-    'umbrella',
-    'handbag',
-    'tie',
-    'suitcase',
-    'frisbee',
-    'skis',
-    'snowboard',
-    'sports ball',
-    'kite',
-    'baseball bat',
-    'baseball glove',
-    'skateboard',
-    'surfboard',
-    'tennis racket',
-    'bottle',
-    'wine glass',
-    'cup',
-    'fork',
-    'knife',
-    'spoon',
-    'bowl',
-    'banana',
-    'apple',
-    'sandwich',
-    'orange',
-    'broccoli',
-    'carrot',
-    'hot dog',
-    'pizza',
-    'donut',
-    'cake',
-    'chair',
-    'sofa',
-    'pottedplant',
-    'bed',
-    'diningtable',
-    'toilet',
-    'tvmonitor',
-    'laptop',
-    'mouse',
-    'remote',
-    'keyboard',
-    'cell phone',
-    'microwave',
-    'oven',
-    'toaster',
-    'sink',
-    'refrigerator',
-    'book',
-    'clock',
-    'vase',
-    'scissors',
-    'teddy bear',
-    'hair drier',
-    'toothbrush',
-]
+CLASSES = {
+    'chair': 20,
+    'tvmonitor': 20,
+    'bench': 40,
+    'sofa': 40,
+    'bed': 60,
+    'diningtable': 80,
+}
 
 # Readings storage
-'''
-    Object structure:
-    {
-        'x': 0,
-        'y': 0,
-        'class': '',
-
-        #  TO GET IT LATER
-        'width': 0,
-        'height': 0
-    }
-'''
 READINGS = []
 
 OBJECT_STRUCTURE = {
@@ -166,21 +80,7 @@ MAP_RESOLUTION = None
 MAP_HEADER = None
 MAP_INFO = None
 
-'''
-  // It transforms the coordinate system from the Odom to the Map
-  std::tuple<int, int> transformCoordinateOdomToMap(float x, float y) {
-    int j = y / map_resolution_ - map_origin_y_ / map_resolution_;
-    int i = x / map_resolution_ - map_origin_x_ / map_resolution_;
-    return std::make_tuple(i, j);
-  }
-
-  // It transforms the coordinate system from the Map to the Odom
-  std::tuple<float, float> transformCoordinateMapToOdom(int x, int y) {
-    float i = (x + map_origin_x_ / map_resolution_) * map_resolution_;
-    float j = (y + map_origin_y_ / map_resolution_) * map_resolution_;
-    return std::make_tuple(i, j);
-  }
-'''
+LOADED_MAP = None
 
 # It transforms the coordinate system from the Odom to the Map
 def transform_coord_odom_top_map(x, y):
@@ -197,11 +97,7 @@ def transform_coord_map_to_odom(x, y):
 def matrix_indices_to_vector_index(i, j):
     return i + j * MAP_WIDTH
 
-def create_global_map_message(a):
-    x = a[0]
-    y = a[1]
-    radius = 5
-
+def copy_global_map():
     grid = OccupancyGrid()
     grid.header = MAP_HEADER
     grid.info = MAP_INFO
@@ -212,19 +108,32 @@ def create_global_map_message(a):
         m = h * MAP_WIDTH
         for w in range(0, MAP_WIDTH):
             i = w + m
+            grid.data[i] = MAP_DATA[i]
 
-            if h == y and w == x:
-                print("H: %s | W: %s" % (h, w))
-                grid.data[i] = 80
-            else:
-                grid.data[i] = MAP_DATA[i]
+            # if h == y and w == x:
+            #     grid.data[i] = 80
+            # else:
+            #     grid.data[i] = MAP_DATA[i]
+    return grid
 
-    # Radius
-    for i in range(y - radius, y + radius):
-        for j in range(x - radius, x + radius):
-            if x >= 0 and x < MAP_WIDTH and y >= 0 and y < MAP_HEIGHT:
-                idx = matrix_indices_to_vector_index(j, i)
-                grid.data[idx] = 80
+def paint_global_map():
+    radius = 5
+    grid = LOADED_MAP
+    
+    for obj in READINGS:
+        x = obj['map_coord_x']
+        y = obj['map_coord_y']
+        _class = obj['Class']
+
+        for i in range(y - radius, y + radius):
+            for j in range(x - radius, x + radius):
+                if x >= 0 and x < MAP_WIDTH and y >= 0 and y < MAP_HEIGHT:
+                    idx = matrix_indices_to_vector_index(j, i)
+
+                    try:
+                        grid.data[idx] = CLASSES[_class.lower()]
+                    except:
+                        grid.data[idx] = 100
 
     PUBLISHER.publish(grid)
 
@@ -243,9 +152,6 @@ def mock_found_objects():
 def euclidian_distance(x,y):
     return sqrt(x**2 + y**2)
 
-# O mock não pode ser feito no loop. Dã.
-# mock_found_objects()
-
 #  Objects distance
 def object_match(current_obj, object_class):
 
@@ -255,46 +161,51 @@ def object_match(current_obj, object_class):
         É que se adicionou uma vez já, e ficou parado,
         não precisa continuar verificando
     '''
-    # if STATE == 'MOVING':
-    if True:
+
+    if STATE == 'MOVING':
+    # if True:
 
         #  TODO: Descobrir um threshold aceitável
-        thresold = 3  # In meters
+        thresold = 3
 
         current_coordinate = (current_obj[0], current_obj[1])
-        current_d = euclidian_distance(current_coordinate[0], current_coordinate[1])
+        # current_d = euclidian_distance(current_coordinate[0], current_coordinate[1])
 
         seen = False
 
-        #  TODO: Silly approach
         for i in range(0, len(READINGS)):
 
             obj = READINGS[i]
 
-            print("\n... LIST Object ID: ", i)
-            print("... CURRENT OBJECT: ", current_obj)
-            print("... LIST OBJECT: ", obj)
+            # prev_d = euclidian_distance(obj['x'], obj['y'])
+            # diff = abs(current_d - prev_d)
 
-            prev_d = euclidian_distance(obj['x'], obj['y'])
-            print('... LIST Object distance from origin: ', prev_d)
+            x_diff = abs(current_obj[0] - obj['x'])
+            y_diff = abs(current_obj[1] - obj['y'])
+            dist = euclidian_distance(x_diff, y_diff)
 
-            print('... CURRENT Object distance from origin: ', current_d)
+            print('dist: ', dist)
 
-            diff = abs(current_d - prev_d)
-            print("... DIFFERENCE: ", diff)
-
-            if (diff < thresold):
+            if (dist < thresold):
+                print("SEEN!!!")
                 seen = True
-                print("seen!!! ")
                 break
 
-        print('seen value:? ', seen)
+        robot_image_x_diff = abs(CURRENT_POSE[0] - current_coordinate[0])
+        robot_image_y_diff = abs(CURRENT_POSE[1] - current_coordinate[1])
+        robot_image_dist = euclidian_distance(robot_image_x_diff, robot_image_y_diff)
+        robot_image_threshold = 4
 
-        if not seen:
-            print('Not seen, add it')
+        if not seen and robot_image_dist < robot_image_threshold:
+            print("ADDING")
             obj_structure = OBJECT_STRUCTURE.copy()
             obj_structure['x'] = current_coordinate[0]
             obj_structure['y'] = current_coordinate[1]
+
+            map_coord = transform_coord_odom_top_map(current_coordinate[0], current_coordinate[1])
+            obj_structure['map_coord_x'] = map_coord[0]
+            obj_structure['map_coord_y'] = map_coord[1]
+
             obj_structure['Class'] = object_class
             READINGS.append(obj_structure)
 
@@ -307,9 +218,9 @@ def check_robot_state():
 
         x_diff = abs(CURRENT_POSE[0] - PREV_POSE[0])
         y_diff = abs(CURRENT_POSE[1] - PREV_POSE[1])
+        d = euclidian_distance(x_diff, y_diff)
 
         theta_diff = abs(CURRENT_POSE[2] - PREV_POSE[2])
-        d = euclidian_distance(x_diff, y_diff)
 
         euclidian_threshold = 0.0005 # Meters
         angular_threshold = 0.0005 # Rad
@@ -318,8 +229,6 @@ def check_robot_state():
             STATE = 'MOVING'
         else:
             STATE = 'STILL'
-
-    print("STATE: ", STATE)
 
 def align_depth_to_color(x, min_dimension, max_dimension):
     """ You have a small image centered on a bigger one.
@@ -348,9 +257,7 @@ def align_depth_to_color(x, min_dimension, max_dimension):
 
 
 def get_object_angle_pov_robot(x_angle, THETA):
-    '''
-    Centro como 0º
-    '''
+    ''' Centro como 0º '''
     return x_angle - THETA
 
 def get_object_angle(robo_angle, pixel_x):
@@ -363,11 +270,8 @@ def get_object_angle(robo_angle, pixel_x):
     # angle = robo_angle + half_camera_angle - (CAMERA_RAD_ANGLE_PER_PIXEL * pixel_x)
 
     metade = CAMERA_COLOR_WIDTH / 2
-
     p = pixel_x - metade
-
     angle = (p / CAMERA_RAD_ANGLE_PER_PIXEL) * (-1)
-
     b = robo_angle + angle
 
     if b > pi:
@@ -412,13 +316,6 @@ def map_callback(msg):
     MAP_DATA = msg.data
     MAP_HEADER = msg.header
 
-    print('...................................')
-    print("MAP WIDTH: ", MAP_WIDTH)
-    print("MAP HEIGHT: ", MAP_HEIGHT)
-    print("MAP RESOLUTION: ", MAP_RESOLUTION)
-    print("ORIGIN:\n", MAP_ORIGIN)
-    print('...................................')
-
 def darknet_callback(msg):
     global DARKNET
     global BOUNDING_BOX_CENTROID
@@ -437,38 +334,34 @@ def darknet_callback(msg):
                                             DARKNET['xmin'],
                                             DARKNET['ymax'],
                                             DARKNET['ymin']
-                                        )
+    )
+
 bridge = CvBridge()
 
 def depth_callback(msg):
-
     global DEPTH_VALUE
     global PIXEL_COLOR_X
     global PIXEL_COLOR_Y
     global DEPTH_X
     global DEPTH_Y
 
-    if BOUNDING_BOX_CENTROID:
-        x,y = BOUNDING_BOX_CENTROID
-        DEPTH_X = align_depth_to_color(x, CAMERA_COLOR_WIDTH, CAMERA_DEPTH_WIDTH)
-        DEPTH_Y = align_depth_to_color(y, CAMERA_COLOR_HEIGHT, CAMERA_DEPTH_HEIGHT)
+    def depth_of_pixel(x, y, cv_image):
+        if BOUNDING_BOX_CENTROID:
+            x,y = BOUNDING_BOX_CENTROID
+            DEPTH_X = align_depth_to_color(x, CAMERA_COLOR_WIDTH, CAMERA_DEPTH_WIDTH)
+            DEPTH_Y = align_depth_to_color(y, CAMERA_COLOR_HEIGHT, CAMERA_DEPTH_HEIGHT)
 
-        cv_image = bridge.imgmsg_to_cv2(msg, msg.encoding)  # It gets depth information in a 'readable way'
+            if DEPTH_X and DEPTH_Y:
+                ''' Depth is in meters
+                    Opencv returns image as: (y,x) and not (x,y)
+                '''
+                depth = cv_image[DEPTH_Y][DEPTH_X] / 1000
+                return depth
 
-        # # TEST MODE
-        # np_img = np.array(cv_image)
-        # DEPTH_VALUE = stats.mode(np_img)
+    cv_image = bridge.imgmsg_to_cv2(msg, msg.encoding)  # It gets depth information in a 'readable way'
 
-        # TEST MEDIAN
-        DEPTH_VALUE = np.mean(cv_image) / 1000
-
-        # # Pega o DEPTH do pixel específico
-        # if DEPTH_X and DEPTH_Y:
-        #     ''' Depth is in meters
-        #         Opencv returns image as: (y,x) and not (x,y)
-        #     '''
-        #     depth = cv_image[DEPTH_Y][DEPTH_X] / 1000
-        #     DEPTH_VALUE = depth
+    # Get mean depth from entire image
+    DEPTH_VALUE = np.mean(cv_image) / 1000
 
 def pointcloud_callback(msg):
     # print("msg: ", msg.point_step)
@@ -480,7 +373,6 @@ def odom_callback(msg):
     global PREV_POSE
 
     if CURRENT_POSE:
-        # print("...definind prev_pose")
         PREV_POSE = CURRENT_POSE
 
     # Posição do robô
@@ -491,7 +383,6 @@ def odom_callback(msg):
     THETA_q = msg.pose.pose.orientation
     THETA_list = [THETA_q.x, THETA_q.y, THETA_q.z, THETA_q.w]
     (roll, pitch, yaw) = euler_from_quaternion (THETA_list)
-    # print("\nyaw: %s " % yaw)
 
     THETA = round(yaw, 4)
 
@@ -499,6 +390,7 @@ def odom_callback(msg):
 
 def main():
     global PUBLISHER
+    global LOADED_MAP
 
     rospy.init_node('detection')
 
@@ -517,11 +409,14 @@ def main():
     map_topic = '/map'
     rospy.Subscriber(map_topic, OccupancyGrid, map_callback)
 
-    map_publish_topic = '/map_carol'
+    map_publish_topic = '/semantic_map'
     PUBLISHER = rospy.Publisher(map_publish_topic, OccupancyGrid)
 
     rate = rospy.Rate(1)
     while not rospy.is_shutdown():
+
+        if MAP_DATA and not LOADED_MAP:
+            LOADED_MAP = copy_global_map()
 
         if BOUNDING_BOX_CENTROID and DEPTH_VALUE and CURRENT_POSE and DARKNET:
 
@@ -542,24 +437,21 @@ def main():
                     object_map_xy[1] + CURRENT_POSE[1]
             )
 
-            if MAP_DATA:
-                a = transform_coord_odom_top_map(object_xy[0], object_xy[1])
-                create_global_map_message(a)
-
-            print("\n\nDARKNET: ", DARKNET)
-            print("BOUNDING_BOX_CENTROID: ", BOUNDING_BOX_CENTROID)
-            print("ROBOT: ", CURRENT_POSE)
-            print("DEPTH: ", DEPTH_VALUE)
-            print("ANGLE: ", x_angle)
-            print("OBJECT XY: ", object_map_xy)
-            print("OBJECT XY + ROBOT: ", object_xy)
-
             # #  TODO: Sincronizar as leituras e.e
-            # check_robot_state()
-            # object_match(object_map_xy, DARKNET['class'])
+            check_robot_state()
+            object_match(object_xy, DARKNET['class'])  # Adiciona no READINGS
 
-            # # print("angle_from_robot_vision: ", angle_from_robot_vision)
-            # # print("OBJECT MAP XY: ", object_map_xy)
+            if MAP_DATA and READINGS:
+                paint_global_map()
+
+            # print("\n\nDARKNET: ", DARKNET)
+            # print("BOUNDING_BOX_CENTROID: ", BOUNDING_BOX_CENTROID)
+            print("\n\nROBOT: ", CURRENT_POSE)
+            # print("DEPTH: ", DEPTH_VALUE)
+            # print("ANGLE: ", x_angle)
+            # print("OBJECT XY: ", object_map_xy)
+            print("OBJECT XY + ROBOT: ", object_xy)
+            print("ROBOT STATE: ", STATE)
 
         rate.sleep()
 
