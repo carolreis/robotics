@@ -64,6 +64,7 @@ CLASSES = {
 
 # Readings storage
 READINGS = []
+AMOUNT_OF_OBJECTS = 4
 
 OBJECT_STRUCTURE = {
     'x': 0,
@@ -166,7 +167,7 @@ def object_match(current_obj, object_class):
     # if True:
 
         #  TODO: Descobrir um threshold aceitável
-        thresold = 3
+        thresold = 4
 
         current_coordinate = (current_obj[0], current_obj[1])
         # current_d = euclidian_distance(current_coordinate[0], current_coordinate[1])
@@ -194,9 +195,9 @@ def object_match(current_obj, object_class):
         robot_image_x_diff = abs(CURRENT_POSE[0] - current_coordinate[0])
         robot_image_y_diff = abs(CURRENT_POSE[1] - current_coordinate[1])
         robot_image_dist = euclidian_distance(robot_image_x_diff, robot_image_y_diff)
-        robot_image_threshold = 4
+        robot_image_threshold = 2.5
 
-        if not seen and robot_image_dist < robot_image_threshold:
+        if not seen and robot_image_dist < robot_image_threshold and len(READINGS) < AMOUNT_OF_OBJECTS:
             print("ADDING")
             obj_structure = OBJECT_STRUCTURE.copy()
             obj_structure['x'] = current_coordinate[0]
